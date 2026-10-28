@@ -1,0 +1,125 @@
+\documentclass{article}
+\usepackage{titling}
+\usepackage{ctex}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{amsmath}  % 修复 \text 报错
+\usetikzlibrary{positioning}
+
+\tikzset{
+    box/.style={draw, thin, align=center, inner sep=4pt, outer sep=3pt, font=\small},
+    boxred/.style={draw=red, thin, align=center, inner sep=4pt, outer sep=3pt, font=\small}
+}
+
+\title{数据结构\\ \large 排序}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{归并排序}
+归并排序基于分治思想，先将序列不断分解为子序列，再将有序子序列两两合并，最终得到完整有序序列。
+
+\begin{figure}[htbp]
+\centering
+\resizebox{0.9\textwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=0.6cm and 0.2cm,
+    >=stealth,
+    thick,
+    every path/.style={thick}
+]
+
+% ================== 顶层 ==================
+\node[box] (top) at (0,7) {10 6 7 1 3 9 4 2};
+
+% ================== 第二层 ==================
+\node[box] (l2l) at (-4.2,5.8) {10 6 7 1};
+\node[box] (l2r) at (4.2,5.8) {3 9 4 2};
+
+\draw (top) -- (l2l);
+\draw (top) -- (l2r);
+
+% ================== 第三层 ==================
+\node[box] (l3l1) at (-5.6,4.6) {10 6};
+\node[box] (l3l2) at (-2.8,4.6) {7 1};
+\node[box] (l3r1) at (2.8,4.6) {3 9};
+\node[box] (l3r2) at (5.6,4.6) {4 2};
+
+\draw (l2l) -- (l3l1);
+\draw (l2l) -- (l3l2);
+\draw (l2r) -- (l3r1);
+\draw (l2r) -- (l3r2);
+
+% ================== 第四层：单个元素 ==================
+\node[box] (l4l1) at (-6.6,3.4) {10};
+\node[box] (l4l2) at (-4.6,3.4) {6};
+\node[box] (l4l3) at (-3.6,3.4) {7};
+\node[box] (l4l4) at (-1.6,3.4) {1};
+\node[box] (l4r1) at (1.6,3.4) {3};
+\node[box] (l4r2) at (3.6,3.4) {9};
+\node[box] (l4r3) at (4.6,3.4) {4};
+\node[box] (l4r4) at (6.6,3.4) {2};
+
+\draw (l3l1) -- (l4l1);
+\draw (l3l1) -- (l4l2);
+\draw (l3l2) -- (l4l3);
+\draw (l3l2) -- (l4l4);
+\draw (l3r1) -- (l4r1);
+\draw (l3r1) -- (l4r2);
+\draw (l3r2) -- (l4r3);
+\draw (l3r2) -- (l4r4);
+
+% ================== 绿色分割线 ==================
+\draw[green, thick] (-7.5,2.7) -- (7.5,2.7);
+
+% ================== 左侧文字 ==================
+\node[align=right, font=\small] at (-8.2,3.2) {分解};
+\node[align=right, font=\small] at (-8.2,1.6) {合并};
+
+% ================== 第五层：第一次合并 ==================
+\node[boxred] (l5l1) at (-5.6,1.8) {6 10};
+\node[boxred] (l5l2) at (-2.8,1.8) {1 7};
+\node[boxred] (l5r1) at (2.8,1.8) {3 9};
+\node[boxred] (l5r2) at (5.6,1.8) {2 4};
+
+\draw (l4l1) -- (l5l1);
+\draw (l4l2) -- (l5l1);
+\draw (l4l3) -- (l5l2);
+\draw (l4l4) -- (l5l2);
+\draw (l4r1) -- (l5r1);
+\draw (l4r2) -- (l5r1);
+\draw (l4r3) -- (l5r2);
+\draw (l4r4) -- (l5r2);
+
+% ================== 第六层 ==================
+\node[boxred] (l6l) at (-4.2,0.6) {1 6 7 10};
+\node[boxred] (l6r) at (4.2,0.6) {2 3 4 9};
+
+\draw (l5l1) -- (l6l);
+\draw (l5l2) -- (l6l);
+\draw (l5r1) -- (l6r);
+\draw (l5r2) -- (l6r);
+
+% ================== 第七层：最终结果 ==================
+\node[boxred] (l7) at (0,-0.6) {1 2 3 4 6 7 9 10};
+
+\draw (l6l) -- (l7);
+\draw (l6r) -- (l7);
+
+\end{tikzpicture}
+}
+\caption{归并排序示意图}
+\end{figure}
+
+有序子数组合并过程示例（A = [6, 10]，B = [1, 7]）：
+\begin{enumerate}
+    \item 初始状态：指针 $i$ 指向 A 第一个元素：$i=0,\ A[i]=6$；指针 $j$ 指向 B 第一个元素：$j=0,\ B[j]=1$；结果数组 $\text{res} = []$。
+    \item 对比 $6$ 和 $1$，$1$ 更小 $\to$ 把 $1$ 放进 $\text{res}$，$j \mathrel{+}= 1$。$\text{res}$：$[1]$，现在 $B[j]=7$。
+    \item 对比 $6$ 和 $7$，$6$ 更小 $\to$ 把 $6$ 放进 $\text{res}$，$i \mathrel{+}= 1$。$\text{res}$：$[1, 6]$，现在 $A[i]=10$。
+    \item 对比 $10$ 和 $7$，$7$ 更小 $\to$ 把 $7$ 放进 $\text{res}$，$j \mathrel{+}= 1$；此时 B 数组全部取完（$j$ 走到末尾）。$\text{res}$：$[1, 6, 7]$。
+    \item B 数组空了，直接把 A 剩下的元素全部追加进来，剩下 A 里的 $10$。$\text{res}$：$[1, 6, 7, 10]$。
+\end{enumerate}
+
+\end{document}
